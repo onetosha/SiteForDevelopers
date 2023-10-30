@@ -1,5 +1,6 @@
 ﻿using AuthService.Entities;
 using AuthService.Helpers;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,9 +17,9 @@ namespace AuthService.Authorization
     public class JwtUtils : IJwtUtils
     {
         private readonly AppSettings _appSettings;
-        public JwtUtils(AppSettings appSettings)
+        public JwtUtils(IOptions<AppSettings> appSettings)
         {
-            _appSettings = appSettings;
+            _appSettings = appSettings.Value;
             if (string.IsNullOrEmpty(_appSettings.Secret))
             {
                 throw new Exception("JWT secret not configured");

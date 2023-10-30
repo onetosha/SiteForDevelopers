@@ -11,7 +11,7 @@ namespace AuthService.Controllers
     public class UsersController : Controller
     {
         private IUserService _userService;
-        private UsersController(IUserService userService)
+        public UsersController(IUserService userService)
         {
             _userService = userService;
         }
