@@ -1,5 +1,6 @@
 ﻿using AuthService.Authorization;
 using AuthService.Entities;
+using AuthService.Helpers;
 using AuthService.Models;
 
 namespace AuthService.Services
@@ -12,36 +13,32 @@ namespace AuthService.Services
     }
     public class UserService : IUserService
     {
-        public List<User> _users = new List<User>
-        {
-            new User { Id = 1, FirstName = "Test", LastName = "User", Username = "test", Password = "test" }
-        };
+        private AuthDBContext _dbContext;
         private readonly IJwtUtils _jwtUtils;
-        public UserService(IJwtUtils jwtUtils)
+        public UserService(IJwtUtils jwtUtils, AuthDBContext dBContext)
         {
+            _dbContext = dBContext;
             _jwtUtils = jwtUtils;
         }
         public AuthenticateResponse? Authenticate(AuthenticateReqest model)
         {
-            var user = _users.SingleOrDefault(x => x.Username == model.Username && x.Password == model.Password);
-
+            var user = _dbContext.user.SingleOrDefault(x => x.Username == model.Username && x.Password == model.Password);
             if (user == null)
             {
                 return null;
             }
-
             var token = _jwtUtils.GenerateJwtToken(user);
             return new AuthenticateResponse(user, token);
         }
 
         public IEnumerable<User> GetAll()
         {
-            return _users;
+            return _dbContext.user;
         }
 
         public User? GetById(int id)
         {
-            return _users.FirstOrDefault(x => x.Id == id);
+            return _dbContext.user.FirstOrDefault(x => x.Id == id);
         }
     }
 }

@@ -8,6 +8,7 @@ var services = builder.Services;
 services.AddCors();
 services.AddControllers();
 
+services.AddDbContext<AuthDBContext>();
 services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
 
 services.AddScoped<IJwtUtils, JwtUtils>();
