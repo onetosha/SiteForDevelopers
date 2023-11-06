@@ -27,6 +27,17 @@ namespace AuthService.Controllers
             }
             return Ok(response);
         }
+        [AllowAnonymous]
+        [HttpPost("registration")]
+        public IActionResult Registration(RegistrationRequest model)
+        {
+            var response = _userService.Registration(model);
+            if (response == null)
+            {
+                return BadRequest(new { message = "Data is incorrect" });
+            }
+            return Ok(response);
+        }
 
         [HttpGet]
         public IActionResult GetAll()

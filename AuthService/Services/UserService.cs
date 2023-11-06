@@ -8,6 +8,7 @@ namespace AuthService.Services
     public interface IUserService
     {
         AuthenticateResponse? Authenticate(AuthenticateReqest model);
+        AuthenticateResponse? Registration(RegistrationRequest model);
         IEnumerable<User> GetAll();
         User? GetById(int id);
     }
@@ -27,6 +28,24 @@ namespace AuthService.Services
             {
                 return null;
             }
+            var token = _jwtUtils.GenerateJwtToken(user);
+            return new AuthenticateResponse(user, token);
+        }
+        public AuthenticateResponse? Registration(RegistrationRequest model)
+        {
+            User user = new User
+            {
+                Username = model.Username,
+                Password = model.Password,
+                FirstName = model.FirstName,
+                LastName = model.LastName
+            };
+            if (user == null) 
+            {
+                return null;
+            }
+            _dbContext.user.Add(user);
+            _dbContext.SaveChanges();
             var token = _jwtUtils.GenerateJwtToken(user);
             return new AuthenticateResponse(user, token);
         }
