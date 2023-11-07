@@ -23,8 +23,8 @@ namespace AuthService.Services
         }
         public AuthenticateResponse? Authenticate(AuthenticateReqest model)
         {
-            var user = _dbContext.user.SingleOrDefault(x => x.Username == model.Username && x.Password == model.Password);
-            if (user == null)
+            var user = _dbContext.user.SingleOrDefault(x => x.Username == model.Username);
+            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
             {
                 return null;
             }
@@ -36,7 +36,7 @@ namespace AuthService.Services
             User user = new User
             {
                 Username = model.Username,
-                Password = model.Password,
+                Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
                 FirstName = model.FirstName,
                 LastName = model.LastName
             };
