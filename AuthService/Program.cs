@@ -17,6 +17,8 @@ services.AddScoped<IUserService, UserService>();
 var app = builder.Build();
 
 app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+
+app.UseMiddleware<ErrorHandlerMiddleware>();
 app.UseMiddleware<JwtMiddleware>();
 app.MapControllers();
 

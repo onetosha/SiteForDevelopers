@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AuthService.Entities;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace AuthService.Models
 {
@@ -14,6 +16,8 @@ namespace AuthService.Models
         public string? Password { get; set; }
         [Required]
         public string? ConfirmPassword { get; set; }
+        [Required]
+        public Role Role { get; set; }
 
     }
 }

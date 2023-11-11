@@ -8,6 +8,7 @@ namespace AuthService.Models
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
         public string? UserName { get; set; }
+        public Role Role { get; set; }
         public string? Token { get; set; }
 
         public AuthenticateResponse(User user, string token)
@@ -16,6 +17,7 @@ namespace AuthService.Models
             FirstName = user.FirstName;
             LastName = user.LastName;
             UserName = user.Username;
+            Role = user.Role;
             Token = token;
         }
     }

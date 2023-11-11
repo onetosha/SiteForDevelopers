@@ -2,6 +2,7 @@
 using AuthService.Entities;
 using AuthService.Helpers;
 using AuthService.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthService.Services
 {
@@ -24,9 +25,9 @@ namespace AuthService.Services
         public AuthenticateResponse? Authenticate(AuthenticateReqest model)
         {
             var user = _dbContext.user.SingleOrDefault(x => x.Username == model.Username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.Password))
+            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
             {
-                return null;
+                throw new AppException("Username or password are incorrect");
             }
             var token = _jwtUtils.GenerateJwtToken(user);
             return new AuthenticateResponse(user, token);
@@ -36,13 +37,14 @@ namespace AuthService.Services
             User user = new User
             {
                 Username = model.Username,
-                Password = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
                 FirstName = model.FirstName,
-                LastName = model.LastName
+                LastName = model.LastName,
+                Role = model.Role
             };
             if (user == null) 
             {
-                return null;
+                throw new AppException("Failed to create new user");
             }
             _dbContext.user.Add(user);
             _dbContext.SaveChanges();
@@ -57,7 +59,9 @@ namespace AuthService.Services
 
         public User? GetById(int id)
         {
-            return _dbContext.user.FirstOrDefault(x => x.Id == id);
+            var user = _dbContext.user.Find(id);
+            if (user == null) throw new KeyNotFoundException("User not found");
+            return user;
         }
     }
 }
