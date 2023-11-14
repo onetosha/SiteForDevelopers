@@ -1,67 +1,89 @@
-﻿using AuthService.Authorization;
-using AuthService.Entities;
+﻿using AuthService.Entities;
 using AuthService.Helpers;
-using AuthService.Models;
+using AuthService.Models.Users;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace AuthService.Services
 {
     public interface IUserService
     {
-        AuthenticateResponse? Authenticate(AuthenticateReqest model);
-        AuthenticateResponse? Registration(RegistrationRequest model);
-        IEnumerable<User> GetAll();
-        User? GetById(int id);
+        Task<string> Login(LoginReqest model);
+        Task<string> Register(RegisterRequest model);
     }
     public class UserService : IUserService
     {
-        private AuthDBContext _dbContext;
-        private readonly IJwtUtils _jwtUtils;
-        public UserService(IJwtUtils jwtUtils, AuthDBContext dBContext)
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly JWTSettings _options;
+        public UserService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IOptions<JWTSettings> options)
         {
-            _dbContext = dBContext;
-            _jwtUtils = jwtUtils;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _options = options.Value;
         }
-        public AuthenticateResponse? Authenticate(AuthenticateReqest model)
+        public async Task<string> Login(LoginReqest model)
         {
-            var user = _dbContext.user.SingleOrDefault(x => x.Username == model.Username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
+            var user = await _userManager.FindByEmailAsync(model.Email);
+
+            var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
+
+            if (result.Succeeded)
             {
-                throw new AppException("Username or password are incorrect");
+                IEnumerable<Claim> claims = await _userManager.GetClaimsAsync(user);
+                var token = GetToken(user, claims);
+                return token;
             }
-            var token = _jwtUtils.GenerateJwtToken(user);
-            return new AuthenticateResponse(user, token);
+            return null;
         }
-        public AuthenticateResponse? Registration(RegistrationRequest model)
+        public async Task<string> Register(RegisterRequest model)
         {
-            User user = new User
+            var user = new IdentityUser
             {
-                Username = model.Username,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
-                FirstName = model.FirstName,
-                LastName = model.LastName,
-                Role = model.Role
+                UserName = model.UserName,
+                Email = model.Email
             };
-            if (user == null) 
+
+            var result = await _userManager.CreateAsync(user, model.Password);
+            
+            if (result.Succeeded)
             {
-                throw new AppException("Failed to create new user");
+                await _signInManager.SignInAsync(user, isPersistent: false);
+
+                List<Claim> claims = new List<Claim>();
+                claims.Add(new Claim("Role", model.Role.ToString()));
+                claims.Add(new Claim(ClaimTypes.Email, model.Email));
+
+                await _userManager.AddClaimsAsync(user, claims);
+                return "Usr created";
             }
-            _dbContext.user.Add(user);
-            _dbContext.SaveChanges();
-            var token = _jwtUtils.GenerateJwtToken(user);
-            return new AuthenticateResponse(user, token);
+            else
+            {
+                return "Usr not created";
+            }
         }
-
-        public IEnumerable<User> GetAll()
+        private string GetToken(IdentityUser user, IEnumerable<Claim> principal)
         {
-            return _dbContext.user;
-        }
+            var claims = principal.ToList();
+            claims.Add(new Claim(ClaimTypes.Name, user.UserName));
 
-        public User? GetById(int id)
-        {
-            var user = _dbContext.user.Find(id);
-            if (user == null) throw new KeyNotFoundException("User not found");
-            return user;
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));
+
+            var jwt = new JwtSecurityToken(
+                    issuer: _options.Issuer,
+                    audience: _options.Audience,
+                    claims: claims,
+                    expires: DateTime.UtcNow.Add(TimeSpan.FromDays(1)),
+                    notBefore: DateTime.UtcNow,
+                    signingCredentials: new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
+                );
+            return new JwtSecurityTokenHandler().WriteToken(jwt);
         }
     }
 }

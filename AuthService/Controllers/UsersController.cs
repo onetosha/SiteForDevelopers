@@ -1,6 +1,6 @@
-﻿using AuthService.Authorization;
-using AuthService.Models;
+﻿using AuthService.Models.Users;
 using AuthService.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthService.Controllers
@@ -17,10 +17,10 @@ namespace AuthService.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("authenticate")]
-        public IActionResult Authenticate(AuthenticateReqest model)
+        [HttpPost("Login")]
+        public async Task<IActionResult> Login(LoginReqest model)
         {
-            var response = _userService.Authenticate(model);
+            var response = await _userService.Login(model);
             if (response == null)
             {
                 return BadRequest(new { message = "Username or password is incorrect" });
@@ -28,22 +28,15 @@ namespace AuthService.Controllers
             return Ok(response);
         }
         [AllowAnonymous]
-        [HttpPost("registration")]
-        public IActionResult Registration(RegistrationRequest model)
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register(RegisterRequest model)
         {
-            var response = _userService.Registration(model);
+            var response = await _userService.Register(model);
             if (response == null)
             {
                 return BadRequest(new { message = "Data is incorrect" });
             }
             return Ok(response);
-        }
-
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            var users = _userService.GetAll();
-            return Ok(users);
         }
     }
 }
