@@ -16,34 +16,14 @@ services.AddSwaggerGen();
 services.AddDbContext<UserDBContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("ApiDatabase")));
 services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<UserDBContext>();
 
-
-services.Configure<JWTSettings>(builder.Configuration.GetSection("JWTSettings"));
-
-
-services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidIssuer = builder.Configuration.GetSection("JWTSettings:Issuer").Value,
-        ValidateAudience = true,
-        ValidAudience = builder.Configuration.GetSection("JWTSettings:Audience").Value,
-        ValidateLifetime = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration.GetSection("JWTSettings:SecretKey").Value)),
-        ValidateIssuerSigningKey = true
-    };
-});
-
 services.AddScoped<IUserService, UserService>();
+services.AddScoped<IRoleService, RoleService>();
 
 
 var app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {

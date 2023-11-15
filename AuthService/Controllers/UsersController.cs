@@ -27,6 +27,7 @@ namespace AuthService.Controllers
             }
             return Ok(response);
         }
+
         [AllowAnonymous]
         [HttpPost("Register")]
         public async Task<IActionResult> Register(RegisterRequest model)

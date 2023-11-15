@@ -1,5 +1,4 @@
-﻿using AuthService.Entities;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace AuthService.Models.Users
 {
@@ -7,7 +6,5 @@ namespace AuthService.Models.Users
     {
         [Required]
         public string UserName { get; set; }
-        [Required]
-        public Role Role { get; set; }
     }
 }

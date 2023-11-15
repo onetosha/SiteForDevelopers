@@ -1,91 +1,78 @@
-﻿//using AuthService.Models.Roles;
-//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Identity;
-//using Microsoft.AspNetCore.Mvc;
+﻿using AuthService.Models.Roles;
+using AuthService.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
-//namespace AuthService.Controllers
-//{
-//    [ApiController]
-//    [Authorize]
-//    [Route("[controller]")]
-//    public class RolesController : Controller
-//    {
-//        RoleManager<IdentityRole> _roleManager;
-//        UserManager<IdentityUser> _userManager;
-//        public RolesController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager)
-//        {
-//            _roleManager = roleManager;
-//            _userManager = userManager;
-//        }
+namespace AuthService.Controllers
+{
+    [ApiController]
+    [Route("[controller]")]
+    [Authorize]
+    public class RolesController : Controller
+    {
+        IRoleService _roleService;
+        public RolesController(IRoleService roleService)
+        {
+            _roleService = roleService;
+        }
 
-//        [HttpPost("Create")]
-//        public async Task<IActionResult> Create(string roleName)
-//        {
-//            if (!string.IsNullOrEmpty(roleName))
-//            {
-//                IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(roleName));
-//                if (result.Succeeded)
-//                {
-//                    return Ok(roleName);
-//                }
-//            }
-//            return BadRequest();
-//        }
-//        [HttpPost("Delete")]
-//        public async Task<IActionResult> Delete(string id)
-//        {
-//            IdentityRole role = await _roleManager.FindByIdAsync(id);
-//            if (role != null)
-//            {
-//                IdentityResult result = await _roleManager.DeleteAsync(role);
-//            }
-//            return Ok(id);
-//        }
-//        [HttpGet("UserList")]
-//        public IActionResult UserList() => Ok(_userManager.Users.ToList());
-//        [HttpGet("Edit")]
-//        public async Task<IActionResult> Edit(string userId)
-//        {
-//            // получаем пользователя
-//            IdentityUser user = await _userManager.FindByIdAsync(userId);
-//            if (user != null)
-//            {
-//                // получем список ролей пользователя
-//                var userRoles = await _userManager.GetRolesAsync(user);
-//                var allRoles = _roleManager.Roles.ToList();
-//                ChangeRoleViewModel model = new ChangeRoleViewModel
-//                {
-//                    UserId = user.Id,
-//                    UserEmail = user.Email,
-//                    UserRoles = userRoles,
-//                    AllRoles = allRoles
-//                };
-//                return Ok(model);
-//            }
+        //Создание ролей
+        [HttpPost("Create")]
+        public async Task<IActionResult> Create([FromBody] CreateDeleteRequest model)
+        {
+            var response = await _roleService.Create(model);
+            if (response == null)
+            {
+                return BadRequest(new { message = "Failed to create new Role" });
+            }
+            return Ok(response);
+        } 
 
-//            return NotFound();
-//        }
-//        [HttpPost("Edit")]
-//        public async Task<IActionResult> Edit(string userId, List<string> roles)
-//        {
-//            IdentityUser user = await _userManager.FindByIdAsync(userId);
-//            if (user != null)
-//            {
-//                var userRoles = await _userManager.GetRolesAsync(user);
-//                var allRoles = _roleManager.Roles.ToList();
-//                var addedRoles = roles.Except(userRoles);
-//                var removedRoles = userRoles.Except(roles);
+        //Удаление ролей
+        [HttpPost("Delete")]
+        public async Task<IActionResult> Delete([FromBody] CreateDeleteRequest model)
+        {
+            var response = await _roleService.Delete(model);
+            if (response == null)
+            {
+                return BadRequest(new { message = "Failed to delete Role" });
+            }
+            return Ok(response);
+        }
 
-//                await _userManager.AddToRolesAsync(user, addedRoles);
+        //Проверка работы ролей
+        [Authorize(Roles = "Admin")]
+        [HttpGet("UserList")]
+        public IActionResult UserList()
+        {
+            return Ok(_roleService.UserList());
+        }
 
-//                await _userManager.RemoveFromRolesAsync(user, removedRoles);
+        //Получение списка ролей у пользователя
+        [HttpGet("Edit")]
+        public async Task<IActionResult> Edit([FromBody] EditGetRequest model)
+        {
+            ChangeRoleModel response = await _roleService.EditGet(model);
+            if (response == null)
+            {
+                return NotFound();
+            }
+            return Ok(response);
+        }
 
-//                return Ok(userId);
-//            }
-
-//            return NotFound();
-//        }
-//    }
+        //Назначение/удаление ролей пользователя
+        [HttpPost("Edit")]
+        public async Task<IActionResult> Edit([FromBody] EditPostRequest model)
+        {
+            var response = await _roleService.EditPost(model);
+            if (response == null)
+            {
+                return NotFound();
+            }
+            return Ok(response);
+        }
+    }
 
 
-//}
+}

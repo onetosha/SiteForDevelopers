@@ -2,13 +2,13 @@
 
 namespace AuthService.Models.Roles
 {
-    public class ChangeRoleViewModel
+    public class ChangeRoleModel
     {
-        public string UserId { get; set; }
+        public string UserName { get; set; }
         public string UserEmail { get; set; }
         public List<IdentityRole> AllRoles { get; set; }
         public IList<string> UserRoles { get; set; }
-        public ChangeRoleViewModel()
+        public ChangeRoleModel()
         {
             AllRoles = new List<IdentityRole>();
             UserRoles = new List<string>();
