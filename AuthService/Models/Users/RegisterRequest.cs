@@ -5,6 +5,7 @@ namespace AuthService.Models.Users
     public class RegisterRequest : LoginReqest
     {
         [Required]
-        public string UserName { get; set; }
+        [DataType(DataType.EmailAddress)]
+        public string Email { get; set; }
     }
 }

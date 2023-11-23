@@ -9,21 +9,45 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 var services = builder.Services;
-services.AddCors();
-services.AddControllers();
-services.AddSwaggerGen();
 
 services.AddDbContext<UserDBContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("ApiDatabase")));
 services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<UserDBContext>();
 
+services.Configure<JWTSettings>(builder.Configuration.GetSection("JWTSettings"));
+
+var issuer = builder.Configuration.GetSection("JWTSettings:Issuer").Value;
+var audience = builder.Configuration.GetSection("JWTSettings:Audience").Value;
+var secretkey = builder.Configuration.GetSection("JWTSettings:SecretKey").Value;
+var signingkey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretkey));
+
+services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateIssuerSigningKey = true,
+        ValidateLifetime = true,
+        ValidIssuer = issuer,
+        ValidAudience = audience,
+        IssuerSigningKey = signingkey
+    };
+});
+
+services.AddControllers();
+
 services.AddScoped<IUserService, UserService>();
 services.AddScoped<IRoleService, RoleService>();
 
+services.AddSwaggerGen();
 
 var app = builder.Build();
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 if (app.Environment.IsDevelopment())
 {
@@ -31,8 +55,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors(x => x.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
+
 
 app.Run();

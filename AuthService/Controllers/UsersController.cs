@@ -17,8 +17,8 @@ namespace AuthService.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("Login")]
-        public async Task<IActionResult> Login(LoginReqest model)
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginReqest model)
         {
             var response = await _userService.Login(model);
             if (response == null)
@@ -29,8 +29,8 @@ namespace AuthService.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("Register")]
-        public async Task<IActionResult> Register(RegisterRequest model)
+        [HttpPost("register")]
+        public async Task<IActionResult> Register([FromBody] RegisterRequest model)
         {
             var response = await _userService.Register(model);
             if (response == null)

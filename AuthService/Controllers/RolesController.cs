@@ -1,14 +1,13 @@
 ﻿using AuthService.Models.Roles;
 using AuthService.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthService.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
     [Authorize]
+    [Route("[controller]")]
     public class RolesController : Controller
     {
         IRoleService _roleService;
@@ -18,7 +17,7 @@ namespace AuthService.Controllers
         }
 
         //Создание ролей
-        [HttpPost("Create")]
+        [HttpPost("create")]
         public async Task<IActionResult> Create([FromBody] CreateDeleteRequest model)
         {
             var response = await _roleService.Create(model);
@@ -30,7 +29,7 @@ namespace AuthService.Controllers
         } 
 
         //Удаление ролей
-        [HttpPost("Delete")]
+        [HttpPost("delete")]
         public async Task<IActionResult> Delete([FromBody] CreateDeleteRequest model)
         {
             var response = await _roleService.Delete(model);
@@ -41,16 +40,15 @@ namespace AuthService.Controllers
             return Ok(response);
         }
 
-        //Проверка работы ролей
-        [Authorize(Roles = "Admin")]
-        [HttpGet("UserList")]
+        [Authorize(Roles = "User")]
+        [HttpGet("list")]
         public IActionResult UserList()
         {
             return Ok(_roleService.UserList());
         }
 
         //Получение списка ролей у пользователя
-        [HttpGet("Edit")]
+        [HttpGet("edit")]
         public async Task<IActionResult> Edit([FromBody] EditGetRequest model)
         {
             ChangeRoleModel response = await _roleService.EditGet(model);
@@ -62,7 +60,7 @@ namespace AuthService.Controllers
         }
 
         //Назначение/удаление ролей пользователя
-        [HttpPost("Edit")]
+        [HttpPost("edit")]
         public async Task<IActionResult> Edit([FromBody] EditPostRequest model)
         {
             var response = await _roleService.EditPost(model);
