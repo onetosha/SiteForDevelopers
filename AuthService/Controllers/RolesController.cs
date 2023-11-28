@@ -40,7 +40,6 @@ namespace AuthService.Controllers
             return Ok(response);
         }
 
-        [Authorize(Roles = "User")]
         [HttpGet("list")]
         public IActionResult UserList()
         {
@@ -48,10 +47,10 @@ namespace AuthService.Controllers
         }
 
         //Получение списка ролей у пользователя
-        [HttpGet("edit")]
-        public async Task<IActionResult> Edit([FromBody] EditGetRequest model)
+        [HttpPost("userroles")]
+        public async Task<IActionResult> Edit([FromBody] ShowRolesReqest model)
         {
-            ChangeRoleModel response = await _roleService.EditGet(model);
+            ChangeRoleModel response = await _roleService.ShowRoles(model);
             if (response == null)
             {
                 return NotFound();

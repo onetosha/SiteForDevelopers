@@ -8,7 +8,7 @@ namespace AuthService.Services
         public Task<string> Create(CreateDeleteRequest model);
         public Task<string> Delete(CreateDeleteRequest model);
         public List<IdentityUser> UserList();
-        public Task<ChangeRoleModel> EditGet(EditGetRequest model);
+        public Task<ChangeRoleModel> ShowRoles(ShowRolesReqest model);
         public Task<string> EditPost(EditPostRequest model);
     }
 
@@ -28,7 +28,7 @@ namespace AuthService.Services
                 IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(model.roleName));
                 if (result.Succeeded)
                 {
-                    return model.roleName;
+                    return $"Роль '{model.roleName}' успешно создана!";
                 }
             }
             return null;
@@ -41,10 +41,10 @@ namespace AuthService.Services
             {
                 IdentityResult result = await _roleManager.DeleteAsync(role);
             }
-            return model.roleName;
+            return $"Роль '{model.roleName}' успешно удалена!";
         }
 
-        public async Task<ChangeRoleModel> EditGet(EditGetRequest model)
+        public async Task<ChangeRoleModel> ShowRoles(ShowRolesReqest model)
         {
             IdentityUser user = await _userManager.FindByNameAsync(model.userName);
             if (user != null)
@@ -79,7 +79,7 @@ namespace AuthService.Services
 
                 await _userManager.RemoveFromRolesAsync(user, removedRoles);
 
-                return model.userName;
+                return $"Список ролей пользователя '{model.userName}' успешно изменен!";
             }
             return null;
         }

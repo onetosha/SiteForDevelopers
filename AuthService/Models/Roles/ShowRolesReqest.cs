@@ -2,7 +2,7 @@
 
 namespace AuthService.Models.Roles
 {
-    public class EditGetRequest
+    public class ShowRolesReqest
     {
         [Required]
         public string userName { get; set; }
