@@ -10,6 +10,7 @@ namespace AuthService.Controllers
     [Route("[controller]")]
     public class UsersController : Controller
     {
+        
         private IUserService _userService;
         public UsersController(IUserService userService)
         {
