@@ -66,6 +66,8 @@ app.UseCors(options => options
     .AllowAnyMethod()
     .AllowAnyHeader());
 
+app.UseMiddleware<LoggingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
