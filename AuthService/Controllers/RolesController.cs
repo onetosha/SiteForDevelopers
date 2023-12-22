@@ -15,7 +15,6 @@ namespace AuthService.Controllers
         {
             _roleService = roleService;
         }
-
         
         //Создание ролей
         [HttpPost("create")]
@@ -46,6 +45,11 @@ namespace AuthService.Controllers
         public IActionResult UserList()
         {
             return Ok(_roleService.UserList());
+        }
+        [HttpGet("roles")]
+        public IActionResult RoleList()
+        {
+            return Ok(_roleService.RoleList());
         }
 
         //Получение списка ролей у пользователя

@@ -8,6 +8,7 @@ namespace AuthService.Services
         public Task<string> Create(CreateDeleteRequest model);
         public Task<string> Delete(CreateDeleteRequest model);
         public List<IdentityUser> UserList();
+        public List<IdentityRole> RoleList();
         public Task<ChangeRoleModel> ShowRoles(ShowRolesReqest model);
         public Task<string> EditPost(EditPostRequest model);
     }
@@ -87,6 +88,11 @@ namespace AuthService.Services
         public List<IdentityUser> UserList()
         {
             return _userManager.Users.ToList();
+        }
+
+        public List<IdentityRole> RoleList()
+        {
+            return _roleManager.Roles.ToList();
         }
     }
 }
