@@ -2,6 +2,7 @@
 using AuthService.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace AuthService.Controllers
 {
@@ -26,6 +27,11 @@ namespace AuthService.Controllers
             {
                 return BadRequest(new { message = "Username or password is incorrect" });
             }
+            HttpContext.Response.Cookies.Append(".Application.DeveloperCode", response,
+            new CookieOptions
+            {
+                MaxAge = TimeSpan.FromMinutes(60)
+            });
             return Ok(response);
         }
 

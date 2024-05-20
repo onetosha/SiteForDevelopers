@@ -29,6 +29,8 @@ services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.RequireHttpsMetadata = true;
+    options.SaveToken = true;
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
@@ -50,6 +52,7 @@ services.AddSwaggerGen();
 
 services.AddCors();
 
+
 builder.Logging.ClearProviders();
 builder.Host.UseNLog();
 
@@ -62,11 +65,20 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors(options => options
-    .AllowAnyOrigin()
+    .WithOrigins("https://localhost:5173")
+    .AllowCredentials()
     .AllowAnyMethod()
     .AllowAnyHeader());
 
+app.UseCookiePolicy(new CookiePolicyOptions
+{
+    MinimumSameSitePolicy = SameSiteMode.Strict,
+    HttpOnly = Microsoft.AspNetCore.CookiePolicy.HttpOnlyPolicy.Always,
+    Secure = CookieSecurePolicy.Always
+});
+
 app.UseMiddleware<LoggingMiddleware>();
+app.UseMiddleware<JwtSecureMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();
