@@ -1,7 +1,8 @@
 using AuthService.Helpers;
+using AuthService.Repositories.Implementations;
+using AuthService.Repositories.Interfaces;
 using AuthService.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NLog.Web;
@@ -12,7 +13,6 @@ var builder = WebApplication.CreateBuilder(args);
 var services = builder.Services;
 
 services.AddDbContext<AppDBContext>(options => options.UseNpgsql(builder.Configuration.GetConnectionString("ApiDatabase")));
-services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AppDBContext>();
 
 services.Configure<JWTSettings>(builder.Configuration.GetSection("JWTSettings"));
 
@@ -45,8 +45,13 @@ services.AddAuthentication(options =>
 
 services.AddControllers();
 
+services.AddScoped<IUserRepository, UserRepository>();
+services.AddScoped<IRoleRepository, RoleRepository>();
+services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+
 services.AddScoped<IUserService, UserService>();
 services.AddScoped<IRoleService, RoleService>();
+services.AddScoped<IUserRoleService, UserRoleService>();
 
 services.AddSwaggerGen();
 

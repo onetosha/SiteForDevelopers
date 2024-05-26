@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AuthService.Models.Roles
+namespace AuthService.Domain.Requests.Roles
 {
-    public class CreateDeleteRequest
+    public class RoleModel
     {
         [Required]
         public string roleName { get; set; }

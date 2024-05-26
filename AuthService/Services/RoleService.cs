@@ -1,98 +1,125 @@
-﻿using AuthService.Models.Roles;
-using Microsoft.AspNetCore.Identity;
+﻿using AuthService.Domain.Models;
+using AuthService.Domain.Requests.Roles;
+using AuthService.Domain.Responses;
+using AuthService.Repositories.Interfaces;
 
 namespace AuthService.Services
 {
     public interface IRoleService
     {
-        public Task<string> Create(CreateDeleteRequest model);
-        public Task<string> Delete(CreateDeleteRequest model);
-        public List<IdentityUser> UserList();
-        public List<IdentityRole> RoleList();
-        public Task<ChangeRoleModel> ShowRoles(ShowRolesReqest model);
-        public Task<string> EditPost(EditPostRequest model);
+        public Task<IBaseResponse<bool>> CreateRole(RoleModel model);
+        public Task<IBaseResponse<bool>> DeleteRole(RoleModel model);
+        public Task<IBaseResponse<List<Role>>> GetAllRoles();
+        //public Task<IBaseResponse<ChangeRoleModel>> ShowUserRoles(ShowUserRolesModel model);
+        //public Task<string> EditPost(EditPostRequest model);
     }
 
     public class RoleService : IRoleService
     {
-        RoleManager<IdentityRole> _roleManager;
-        UserManager<IdentityUser> _userManager;
-        public RoleService(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager)
+        private readonly IRoleRepository _roleRepository;
+        public RoleService(IRoleRepository roleRepository)
         {
-            _roleManager = roleManager;
-            _userManager = userManager;
+            _roleRepository = roleRepository;
         }
-        public async Task<string> Create(CreateDeleteRequest model)
+        public async Task<IBaseResponse<bool>> CreateRole(RoleModel model)
         {
-            if (!string.IsNullOrEmpty(model.roleName))
+            var response = new BaseResponse<bool>();
+            try
             {
-                IdentityResult result = await _roleManager.CreateAsync(new IdentityRole(model.roleName));
-                if (result.Succeeded)
+                var role = await _roleRepository.FindIfExist(model.roleName);
+                if (role != null)
                 {
-                    return $"Роль '{model.roleName}' успешно создана!";
+                    response.Description = "Role is already exist";
+                    response.StatusCode = Domain.Enums.StatusCode.Conflict;
                 }
-            }
-            return null;
-        }
-
-        public async Task<string> Delete(CreateDeleteRequest model)
-        {
-            IdentityRole role = await _roleManager.FindByNameAsync(model.roleName);
-            if (role != null)
-            {
-                IdentityResult result = await _roleManager.DeleteAsync(role);
-            }
-            return $"Роль '{model.roleName}' успешно удалена!";
-        }
-
-        public async Task<ChangeRoleModel> ShowRoles(ShowRolesReqest model)
-        {
-            IdentityUser user = await _userManager.FindByNameAsync(model.userName);
-            if (user != null)
-            {
-                //Получение списка ролей
-                var userRoles = await _userManager.GetRolesAsync(user);
-                var allRoles = _roleManager.Roles.ToList();
-                ChangeRoleModel rModel = new ChangeRoleModel
+                var newRole = new Role
                 {
-                    UserName = user.UserName,
-                    UserEmail = user.Email,
-                    UserRoles = userRoles,
-                    AllRoles = allRoles
+                    Name = model.roleName
                 };
-                return rModel;
+                bool result = await _roleRepository.Create(newRole);
+                response.StatusCode = Domain.Enums.StatusCode.OK;
+                response.Description = "Role created";
+                response.Data = result;
+                return response;
             }
-
-            return null;
-        }
-
-        public async Task<string> EditPost(EditPostRequest model)
-        {
-            List<string> roles = model.Roles;
-            IdentityUser user = await _userManager.FindByNameAsync(model.userName);
-            if (user != null)
+            catch (Exception ex)
             {
-                var userRoles = await _userManager.GetRolesAsync(user);
-                var addedRoles = roles.Except(userRoles);
-                var removedRoles = userRoles.Except(roles);
-
-                await _userManager.AddToRolesAsync(user, addedRoles);
-
-                await _userManager.RemoveFromRolesAsync(user, removedRoles);
-
-                return $"Список ролей пользователя '{model.userName}' успешно изменен!";
+                response.Description = $"[CreateRole]: {ex.Message}";
+                response.StatusCode = Domain.Enums.StatusCode.InternalServiceError;
+                return response;
             }
-            return null;
         }
 
-        public List<IdentityUser> UserList()
+        public async Task<IBaseResponse<bool>> DeleteRole(RoleModel model)
         {
-            return _userManager.Users.ToList();
+            var response = new BaseResponse<bool>();
+            try
+            {
+                var role = await _roleRepository.FindIfExist(model.roleName);
+                if (role == null)
+                {
+                    response.Description = "Role not found";
+                    response.StatusCode = Domain.Enums.StatusCode.NotFound;
+                }
+                bool result = await _roleRepository.Delete(role);
+                response.StatusCode = Domain.Enums.StatusCode.OK;
+                response.Description = "Role deleted";
+                response.Data = result;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.Description = $"[DeleteRole]: {ex.Message}";
+                response.StatusCode = Domain.Enums.StatusCode.InternalServiceError;
+                return response;
+            }
         }
 
-        public List<IdentityRole> RoleList()
+        public async Task<IBaseResponse<List<Role>>> GetAllRoles()
         {
-            return _roleManager.Roles.ToList();
+            var response = new BaseResponse<List<Role>>();
+            try
+            {
+                var rolesList = await _roleRepository.GetAll();
+                if (rolesList.Count == 0)
+                {
+                    response.Description = "Roles not found";
+                    response.StatusCode = Domain.Enums.StatusCode.NotFound;
+                }
+                response.StatusCode = Domain.Enums.StatusCode.OK;
+                response.Description = $"{rolesList.Count} roles found";
+                response.Data = rolesList;
+                return response;
+            }
+            catch (Exception ex)
+            {
+                response.Description = $"[GetAllRoles]: {ex.Message}";
+                response.StatusCode = Domain.Enums.StatusCode.InternalServiceError;
+                return response;
+            }
         }
+
+        //public async Task<string> EditPost(EditPostRequest model)
+        //{
+        //    List<string> roles = model.Roles;
+        //    IdentityUser user = await _userManager.FindByNameAsync(model.userName);
+        //    if (user != null)
+        //    {
+        //        var userRoles = await _userManager.GetRolesAsync(user);
+        //        var addedRoles = roles.Except(userRoles);
+        //        var removedRoles = userRoles.Except(roles);
+
+        //        await _userManager.AddToRolesAsync(user, addedRoles);
+
+        //        await _userManager.RemoveFromRolesAsync(user, removedRoles);
+
+        //        return $"Список ролей пользователя '{model.userName}' успешно изменен!";
+        //    }
+        //    return null;
+        //}
+        //public List<IdentityRole> RoleList()
+        //{
+        //    return _roleManager.Roles.ToList();
+        //}
     }
 }

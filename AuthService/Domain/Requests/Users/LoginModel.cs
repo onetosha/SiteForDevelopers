@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AuthService.Models.Users
+namespace AuthService.Domain.Requests.Users
 {
-    public class LoginReqest
+    public class LoginModel
     {
         [Required]
-        public string UserName { get; set; }
+        public string Username { get; set; }
         [Required]
         [DataType(DataType.Password)]
         public string Password { get; set; }

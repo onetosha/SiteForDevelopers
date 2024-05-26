@@ -18,7 +18,7 @@ namespace AuthService.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var logs = await _dbContext.logs.ToListAsync();
+            var logs = await _dbContext.Logs.ToListAsync();
             return Ok(logs);
         }
     }

@@ -1,4 +1,4 @@
-﻿namespace AuthService.Models.Logs
+﻿namespace AuthService.Domain.Models.Logs
 {
     public class LogsModel
     {

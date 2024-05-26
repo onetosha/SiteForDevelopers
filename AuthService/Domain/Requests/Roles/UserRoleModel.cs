@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AuthService.Models.Roles
+namespace AuthService.Domain.Requests.Roles
 {
-    public class EditPostRequest
+    public class UserRoleModel
     {
         [Required]
         public string userName { get; set; }
         [Required]
-        public List<string> Roles { get; set; }
+        public string roleName { get; set; }
     }
 }

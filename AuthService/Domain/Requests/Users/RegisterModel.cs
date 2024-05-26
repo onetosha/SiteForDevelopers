@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AuthService.Models.Users
+namespace AuthService.Domain.Requests.Users
 {
-    public class RegisterRequest : LoginReqest
+    public class RegisterModel : LoginModel
     {
         [Required]
         [DataType(DataType.EmailAddress)]
