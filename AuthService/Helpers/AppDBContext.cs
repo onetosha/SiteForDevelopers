@@ -1,7 +1,7 @@
 ﻿using AuthService.Domain.Models;
 using AuthService.Domain.Models.Logs;
 using Microsoft.EntityFrameworkCore;
-
+using AuthService.Models;
 namespace AuthService.Helpers
 {
     public class AppDBContext : DbContext
@@ -10,6 +10,8 @@ namespace AuthService.Helpers
         {
             Database.EnsureCreated();
         }
+        public DbSet<LogsModel> logs { get; set; }
+        public DbSet<FileUploadMetadata> FileUploads { get; set; }
         public DbSet<LogsModel> Logs { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
