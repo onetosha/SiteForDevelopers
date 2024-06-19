@@ -74,7 +74,7 @@ namespace AuthService.Services
             var response = new BaseResponse<List<Role>>();
             try
             {
-                var user = await _userRepository.FindIfExist(model.Username);
+                var user = await _userRepository.FindIfExist(model.userName);
                 if (user == null)
                 {
                     response.StatusCode = StatusCode.NotFound;
@@ -82,6 +82,8 @@ namespace AuthService.Services
                     return response;
                 }
                 var userRoles = await _userRoleRepository.GetUserRoles(user.Id);
+
+
                 response.StatusCode = StatusCode.OK;
                 response.Description = $"{userRoles.Count} roles found";
                 response.Data = userRoles;

@@ -33,7 +33,7 @@ namespace AuthService.Controllers
             {
                 MaxAge = TimeSpan.FromMinutes(60)
             });
-            return Ok(response);
+            return Ok();
         }
 
         [AllowAnonymous]

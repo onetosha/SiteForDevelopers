@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AuthService.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [Route("[controller]")] 
     //TODO: RESPONSES
     public class RolesController : Controller
@@ -43,7 +43,7 @@ namespace AuthService.Controllers
             }
             return Ok(response);
         }
-        [HttpGet("roles")]
+        [HttpGet("list")]
         public async Task<IActionResult> RoleList()
         {
             var response = await _roleService.GetAllRoles();
